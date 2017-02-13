@@ -14,6 +14,24 @@ Executable="$(readlink -f "$0")"
 ProgDir="${Executable%/*}"
 SoundDir="$ProgDir/sounds"
 ConfigFile="$HOME/.config/moodyrain.cfg"
+ForceRun=false
+
+for i in "$@"
+do
+case $i in
+    -f|--force)
+    ForceRun=true
+    shift # past argument=value
+    ;;
+    -s=*|--searchpath=*)
+    SEARCHPATH="${i#*=}"
+    shift # past argument=value
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+done
 
 # Gui
 
@@ -166,6 +184,11 @@ trap "cleanup; exit" EXIT
 arg_compile_sounds
 arg_compose_gui
 arg_read_config
-gui_select_sounds
-gui_systray
+if ! $ForceRun ; then
+  gui_select_sounds
+fi
+if $ForceRun ; then
+  # There is string when don't run gui. We converted it into array
+  IFS=' ' read -r -a CustomVolume <<< "$CustomVolume"
+fi
 player
